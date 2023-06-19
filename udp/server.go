@@ -10,7 +10,7 @@ import (
 )
 
 // <remote_IP_address> - [<timestamp>] "- - <request_protocol>" - <request_bytes>
-const udpLogLine = "%s - - [%s] \"- - %s\" - %v"
+const udpLogLine = "%s - - [%s] \"- - UDP\" - %v"
 
 func StartUDPServer(port int, verbose bool) {
 	addr := &net.UDPAddr{
@@ -51,6 +51,6 @@ func handleUdpPacketConn(conn net.PacketConn, addr net.Addr, buf []byte, n int, 
 	}
 
 	if verbose {
-		log.Printf(udpLogLine, addr, time.Now().Format("02/Jan/2006:15:04:05 -0700"), "UDP", n)
+		log.Printf(udpLogLine, addr, time.Now().Format("02/Jan/2006:15:04:05 -0700"), n)
 	}
 }
