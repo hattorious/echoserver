@@ -87,7 +87,7 @@ func StartHttpServer(port string, verbose bool) {
 		Handler: handle(indexHandler, verbose),
 	}
 
-	log.Printf("listening on %s, http1.0, http1.1\n", server.Addr)
+	log.Printf("listening on %s; HTTP/1, HTTP/1.1", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }
 
@@ -97,7 +97,7 @@ func StartHttp2CleartextServer(port string, verbose bool) {
 		Handler: h2c.NewHandler(handle(indexHandler, verbose), &http2.Server{}),
 	}
 
-	log.Printf("listening on %s; http1.0, http1.1, non-TLS HTTP/2 (upgrade, prior knowledge)", server.Addr)
+	log.Printf("listening on %s; HTTP/1, HTTP/1.1, h2c (clear-text HTTP/2, upgrade, prior knowledge)", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }
 
@@ -113,7 +113,7 @@ func StartHttp2TLSServer(port string, verbose bool) {
 		panic(err)
 	}
 
-	log.Printf("listening on %s, with TLS, http1.1, http/2", server.Addr)
+	log.Printf("listening on %s; HTTP/1, HTTP/2", server.Addr)
 	if err := server.ListenAndServeTLS("./default.pem", "./default.key"); err != nil {
 		panic(err)
 	}
