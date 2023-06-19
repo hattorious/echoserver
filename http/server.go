@@ -17,6 +17,9 @@ import (
 	"golang.org/x/net/http2/h2c"
 )
 
+// <remote_IP_address> - [<timestamp>] "<request_method> <request_path> <request_protocol>" - <request_bytes>
+const httpLogLine = "%s - - [%s] \"%s %s %s\" - %v"
+
 func indentFPrintln(w io.Writer, level int, format string, args ...interface{}) {
 	var b strings.Builder
 
@@ -37,8 +40,7 @@ func handle(next http.HandlerFunc, verbose bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		next(w, r)
 
-		// <remote_IP_address> - [<timestamp>] "<request_method> <request_path> <request_protocol>" -
-		log.Printf("%s - - [%s] \"%s %s %s\" - -", r.RemoteAddr, time.Now().Format("02/Jan/2006:15:04:05 -0700"), r.Method, r.URL.Path, r.Proto)
+		log.Printf(httpLogLine, r.RemoteAddr, time.Now().Format("02/Jan/2006:15:04:05 -0700"), r.Method, r.URL.Path, r.Proto, r.ContentLength)
 	})
 }
 
@@ -83,21 +85,21 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 
 func StartHttpServer(port string, verbose bool) {
 	server := &http.Server{
-		Addr:    "0.0.0.0:" + port,
+		Addr:    ":" + port,
 		Handler: handle(indexHandler, verbose),
 	}
 
-	log.Printf("listening on %s; HTTP/1, HTTP/1.1", server.Addr)
+	log.Printf("INFO: listening on %s; HTTP/1, HTTP/1.1", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }
 
 func StartHttp2CleartextServer(port string, verbose bool) {
 	server := &http.Server{
-		Addr:    "0.0.0.0:" + port,
+		Addr:    ":" + port,
 		Handler: h2c.NewHandler(handle(indexHandler, verbose), &http2.Server{}),
 	}
 
-	log.Printf("listening on %s; HTTP/1, HTTP/1.1, h2c (clear-text HTTP/2, upgrade, prior knowledge)", server.Addr)
+	log.Printf("INFO: listening on %s; HTTP/1, HTTP/1.1, h2c (clear-text HTTP/2, upgrade, prior knowledge)", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }
 
@@ -113,7 +115,7 @@ func StartHttp2TLSServer(port string, verbose bool) {
 		panic(err)
 	}
 
-	log.Printf("listening on %s; HTTP/1, HTTP/2", server.Addr)
+	log.Printf("INFO: listening on %s; HTTP/1, HTTP/2", server.Addr)
 	if err := server.ListenAndServeTLS("./default.pem", "./default.key"); err != nil {
 		panic(err)
 	}
