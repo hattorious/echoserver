@@ -1,22 +1,31 @@
-FROM golang:1.13 as builder
-WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-RUN go mod download
-# Copy the go source
-COPY ./*.go ./
-COPY default.key .
-COPY default.pem .
-# Build
-RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o server .
+FROM golang:1-alpine as builder
 
-FROM alpine
-RUN apk update && apk add --no-cache curl
-WORKDIR /workspace
-# Collect binaries and assets
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
-COPY --from=builder /workspace/server .
-COPY --from=builder /workspace/default.key .
-COPY --from=builder /workspace/default.pem .
-CMD /workspace/server
+RUN apk --no-cache --no-progress add git ca-certificates tzdata make \
+    && update-ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+WORKDIR /go/echoserver
+
+# Download go modules
+COPY go.mod .
+COPY go.sum .
+RUN GOPROXY=https://proxy.golang.org go mod download
+
+COPY . .
+
+RUN make build
+
+# Create a minimal container to run a Golang static binary
+FROM scratch
+
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /go/echoserver .
+
+ENV ECHO_HTTP1_PORT=8001
+ENV ECHO_HTTP2_CLEARTEXT_PORT=8002
+
+ENTRYPOINT ["/echoserver", "-verbose"]
+EXPOSE 8001/tcp
+EXPOSE 8002/tcp
+EXPOSE 8003/tcp
