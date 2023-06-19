@@ -25,7 +25,9 @@ COPY --from=builder /go/echoserver .
 ENV ECHO_HTTP1_PORT=8001
 ENV ECHO_HTTP2_CLEARTEXT_PORT=8002
 
-ENTRYPOINT ["/echoserver", "-verbose"]
+ENV ECHO_UDP_PORT=8007
+
+ENTRYPOINT ["/echoserver", "--verbose"]
 EXPOSE 8001/tcp
 EXPOSE 8002/tcp
-EXPOSE 8003/tcp
+EXPOSE 8007/udp
