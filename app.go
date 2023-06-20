@@ -9,6 +9,7 @@ import (
 	"github.com/hattorious/echoserver/http"
 	"github.com/hattorious/echoserver/tcp"
 	"github.com/hattorious/echoserver/udp"
+	"github.com/hattorious/echoserver/version"
 )
 
 var (
@@ -31,6 +32,8 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	log.Println(version.ServerID)
 
 	go http.StartHttpServer(ports.http1, verbose)
 	go http.StartHttp2CleartextServer(ports.http2, verbose)
