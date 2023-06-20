@@ -40,13 +40,13 @@ func StartUDPServer(port int, verbose bool) {
 	}
 }
 
-func handleUdpPacketConn(conn net.PacketConn, addr net.Addr, buf []byte, n int, verbose bool) {
+func handleUdpPacketConn(conn *net.UDPConn, addr *net.UDPAddr, buf []byte, n int, verbose bool) {
 	resp := fmt.Sprintf("%s %v > %s", version.ServerID, n, buf)
 
 	_, err := conn.WriteTo([]byte(resp), addr)
 	if err != nil {
 		if verbose {
-			log.Printf("DEBUG: net.PacketConn.WriteTo() error: %s", err)
+			log.Printf("DEBUG: net.UDPConn.WriteTo() error: %s", err)
 		}
 	}
 
