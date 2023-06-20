@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/hattorious/echoserver/http"
+	"github.com/hattorious/echoserver/tcp"
 	"github.com/hattorious/echoserver/udp"
 )
 
@@ -24,6 +25,7 @@ func init() {
 	flag.BoolVar(&verbose, "verbose", false, "enable verbose logging")
 	flag.StringVar(&ports.http1, "http1", getStringEnv("ECHO_HTTP1_PORT", "8001"), "give me a port number for HTTP/1")
 	flag.StringVar(&ports.http2, "http2", getStringEnv("ECHO_HTTP2_CLEARTEXT_PORT", "8002"), "give me a port number for HTTP/2 over clear-text")
+	flag.IntVar(&ports.tcp, "tcp", getIntEnv("ECHO_TCP_PORT", 8006), "give me a port number for UDP")
 	flag.IntVar(&ports.udp, "udp", getIntEnv("ECHO_UDP_PORT", 8007), "give me a port number for UDP")
 }
 
@@ -32,6 +34,7 @@ func main() {
 
 	go http.StartHttpServer(ports.http1, verbose)
 	go http.StartHttp2CleartextServer(ports.http2, verbose)
+	go tcp.StartTCPServer(ports.tcp, verbose)
 	udp.StartUDPServer(ports.udp, verbose)
 }
 
